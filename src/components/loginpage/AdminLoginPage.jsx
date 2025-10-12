@@ -1,18 +1,26 @@
 import { useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { verifyAdminLogin } from "../../api/service/axiosService";
+import { toast } from "react-toastify";
 
 export default function AdminLoginPage() {
-  const naviagte = useNavigate()
+  const naviagte = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleLogin = () => {
-    // if (email && password) {
-    //   alert("Login successful! Dashboard will be implemented next.");
-    // }
-    naviagte("/admin/dashboard")
+  const handleLogin = async () => {
+    const response = await verifyAdminLogin(email, password);
+    if (response.status === 200) {
+      localStorage.setItem("adminToken", response.data.token);
+      toast.success(response.data.message);
+      setTimeout(() => {
+        naviagte("/admin/dashboard");
+      }, 1500);
+    } else {
+      toast.error(response.response.data.message);
+    }
   };
 
   const handleKeyPress = (e) => {

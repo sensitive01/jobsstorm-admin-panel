@@ -1,199 +1,90 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Search,
-  Filter,
   Download,
   Eye,
   Building2,
-  MapPin,
   Calendar,
   Briefcase,
   Users,
   CheckCircle,
   XCircle,
-  TrendingUp,
-  Mail,
-  Phone,
-  Globe,
   UserCheck,
+  Mail,
+  User as UserIcon,
 } from "lucide-react";
+import { getRegistedCompanyData } from "../../api/service/axiosService";
+import { useNavigate } from "react-router-dom";
 
 export default function CompaniesPage() {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [showViewModal, setShowViewModal] = useState(false);
+  const [companies, setCompanies] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Dummy Data
-  const companiesData = [
-    {
-      id: 1,
-      companyName: "Tech Innovators Inc",
-      logo: "TI",
-      industry: "Technology",
-      location: "San Francisco, CA",
-      email: "contact@techinnovators.com",
-      phone: "+1 555-0123",
-      website: "www.techinnovators.com",
-      status: "active",
-      jobsPosted: 25,
-      activeEmployees: 450,
-      hired: 12,
-      joinedDate: "2023-06-15",
-      description:
-        "Leading technology company specializing in AI and machine learning solutions.",
-    },
-    {
-      id: 2,
-      companyName: "Design Studio Pro",
-      logo: "DS",
-      industry: "Design & Creative",
-      location: "New York, NY",
-      email: "hello@designstudio.com",
-      phone: "+1 555-0124",
-      website: "www.designstudio.com",
-      status: "active",
-      jobsPosted: 18,
-      activeEmployees: 125,
-      hired: 8,
-      joinedDate: "2023-08-20",
-      description:
-        "Creative design agency focused on brand identity and digital experiences.",
-    },
-    {
-      id: 3,
-      companyName: "Marketing Masters",
-      logo: "MM",
-      industry: "Marketing & Advertising",
-      location: "Chicago, IL",
-      email: "info@marketingmasters.com",
-      phone: "+1 555-0125",
-      website: "www.marketingmasters.com",
-      status: "inactive",
-      jobsPosted: 12,
-      activeEmployees: 85,
-      hired: 5,
-      joinedDate: "2023-09-10",
-      description:
-        "Full-service marketing agency helping businesses grow their online presence.",
-    },
-    {
-      id: 4,
-      companyName: "AI Solutions Ltd",
-      logo: "AS",
-      industry: "Artificial Intelligence",
-      location: "Austin, TX",
-      email: "contact@aisolutions.com",
-      phone: "+1 555-0126",
-      website: "www.aisolutions.com",
-      status: "active",
-      jobsPosted: 32,
-      activeEmployees: 320,
-      hired: 18,
-      joinedDate: "2023-05-05",
-      description:
-        "Pioneering AI solutions for enterprise automation and data analytics.",
-    },
-    {
-      id: 5,
-      companyName: "Cloud Systems Inc",
-      logo: "CS",
-      industry: "Cloud Computing",
-      location: "Seattle, WA",
-      email: "admin@cloudsystems.com",
-      phone: "+1 555-0127",
-      website: "www.cloudsystems.com",
-      status: "active",
-      jobsPosted: 28,
-      activeEmployees: 540,
-      hired: 22,
-      joinedDate: "2023-03-12",
-      description:
-        "Cloud infrastructure and services provider for modern businesses.",
-    },
-    {
-      id: 6,
-      companyName: "FinTech Innovations",
-      logo: "FI",
-      industry: "Financial Technology",
-      location: "Boston, MA",
-      email: "hello@fintechinno.com",
-      phone: "+1 555-0128",
-      website: "www.fintechinno.com",
-      status: "active",
-      jobsPosted: 20,
-      activeEmployees: 275,
-      hired: 14,
-      joinedDate: "2023-07-22",
-      description:
-        "Revolutionary fintech solutions for digital banking and payments.",
-    },
-    {
-      id: 7,
-      companyName: "HealthCare Plus",
-      logo: "HP",
-      industry: "Healthcare",
-      location: "Denver, CO",
-      email: "info@healthcareplus.com",
-      phone: "+1 555-0129",
-      website: "www.healthcareplus.com",
-      status: "inactive",
-      jobsPosted: 8,
-      activeEmployees: 150,
-      hired: 3,
-      joinedDate: "2023-10-15",
-      description:
-        "Healthcare technology company improving patient care through innovation.",
-    },
-    {
-      id: 8,
-      companyName: "EduTech Solutions",
-      logo: "ES",
-      industry: "Education Technology",
-      location: "Miami, FL",
-      email: "contact@edutech.com",
-      phone: "+1 555-0130",
-      website: "www.edutech.com",
-      status: "active",
-      jobsPosted: 15,
-      activeEmployees: 200,
-      hired: 9,
-      joinedDate: "2023-11-08",
-      description: "EdTech platform transforming online learning experiences.",
-    },
-  ];
-
-  const [companies, setCompanies] = useState(companiesData);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getRegistedCompanyData();
+        if (response.status === 200) {
+          const companiesWithHired = response.data.data.map((company) => ({
+            ...company,
+            employeesHired: Math.floor(Math.random() * 20) + 1, // Random number between 1-20
+          }));
+          setCompanies(companiesWithHired);
+        }
+      } catch (error) {
+        console.error("Error fetching companies:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
 
   // Filter companies based on active tab
   const filteredCompanies = companies.filter((company) => {
     const matchesSearch =
-      company.companyName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.industry.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      company.location.toLowerCase().includes(searchTerm.toLowerCase());
+      company.companyName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.contactEmail?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      company.contactPerson?.toLowerCase().includes(searchTerm.toLowerCase());
 
     if (activeTab === "all") return matchesSearch;
-    if (activeTab === "active")
-      return matchesSearch && company.status === "active";
-    if (activeTab === "inactive")
-      return matchesSearch && company.status === "inactive";
+    if (activeTab === "approved")
+      return matchesSearch && company.verificationstatus === "approved";
+    if (activeTab === "pending")
+      return matchesSearch && company.verificationstatus === "pending";
+    if (activeTab === "rejected")
+      return matchesSearch && company.verificationstatus === "rejected";
 
     return matchesSearch;
   });
 
   const handleView = (company) => {
-    setSelectedCompany(company);
-    setShowViewModal(true);
+    navigate(`/admin/company-job-posted-list/${company._id}`);
+  };
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   };
 
   // Stats
   const stats = {
     total: companies.length,
-    active: companies.filter((c) => c.status === "active").length,
-    inactive: companies.filter((c) => c.status === "inactive").length,
-    totalJobs: companies.reduce((sum, c) => sum + c.jobsPosted, 0),
-    totalEmployees: companies.reduce((sum, c) => sum + c.activeEmployees, 0),
-    totalHired: companies.reduce((sum, c) => sum + c.hired, 0),
+    approved: companies.filter((c) => c.verificationstatus === "approved")
+      .length,
+    pending: companies.filter((c) => c.verificationstatus === "pending").length,
+    rejected: companies.filter((c) => c.verificationstatus === "rejected")
+      .length,
+    totalJobs: companies.reduce((sum, c) => sum + (c.totalJobsPosted || 0), 0),
+    totalHired: companies.reduce((sum, c) => sum + (c.employeesHired || 0), 0),
   };
 
   return (
@@ -231,8 +122,17 @@ export default function CompaniesPage() {
               <CheckCircle size={20} className="text-green-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-green-600">{stats.active}</p>
-          <p className="text-sm text-gray-600 mt-1">Active</p>
+          <p className="text-2xl font-bold text-green-600">{stats.approved}</p>
+          <p className="text-sm text-gray-600 mt-1">Approved</p>
+        </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between mb-2">
+            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
+              <XCircle size={20} className="text-orange-600" />
+            </div>
+          </div>
+          <p className="text-2xl font-bold text-orange-600">{stats.pending}</p>
+          <p className="text-sm text-gray-600 mt-1">Pending</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
@@ -240,8 +140,8 @@ export default function CompaniesPage() {
               <XCircle size={20} className="text-red-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-red-600">{stats.inactive}</p>
-          <p className="text-sm text-gray-600 mt-1">Inactive</p>
+          <p className="text-2xl font-bold text-red-600">{stats.rejected}</p>
+          <p className="text-sm text-gray-600 mt-1">Rejected</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
@@ -253,17 +153,6 @@ export default function CompaniesPage() {
             {stats.totalJobs}
           </p>
           <p className="text-sm text-gray-600 mt-1">Total Jobs</p>
-        </div>
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-              <Users size={20} className="text-orange-600" />
-            </div>
-          </div>
-          <p className="text-2xl font-bold text-orange-600">
-            {stats.totalEmployees}
-          </p>
-          <p className="text-sm text-gray-600 mt-1">Employees</p>
         </div>
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-2">
@@ -292,24 +181,34 @@ export default function CompaniesPage() {
               All ({stats.total})
             </button>
             <button
-              onClick={() => setActiveTab("active")}
+              onClick={() => setActiveTab("approved")}
               className={`px-4 py-2 rounded-lg font-medium transition ${
-                activeTab === "active"
+                activeTab === "approved"
                   ? "bg-green-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              Active ({stats.active})
+              Approved ({stats.approved})
             </button>
             <button
-              onClick={() => setActiveTab("inactive")}
+              onClick={() => setActiveTab("pending")}
               className={`px-4 py-2 rounded-lg font-medium transition ${
-                activeTab === "inactive"
+                activeTab === "pending"
+                  ? "bg-orange-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Pending ({stats.pending})
+            </button>
+            <button
+              onClick={() => setActiveTab("rejected")}
+              className={`px-4 py-2 rounded-lg font-medium transition ${
+                activeTab === "rejected"
                   ? "bg-red-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
             >
-              Inactive ({stats.inactive})
+              Rejected ({stats.rejected})
             </button>
           </div>
 
@@ -340,16 +239,13 @@ export default function CompaniesPage() {
                   Company
                 </th>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase">
-                  Industry
+                  Contact Person
                 </th>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase">
-                  Location
+                  Joined Date
                 </th>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase">
                   Jobs Posted
-                </th>
-                <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase">
-                  Employees
                 </th>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase">
                   Hired
@@ -363,90 +259,101 @@ export default function CompaniesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
-              {filteredCompanies.map((company) => (
-                <tr key={company.id} className="hover:bg-gray-50 transition">
-                  <td className="py-4 px-6">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">
-                          {company.logo}
-                        </span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-gray-900">
-                          {company.companyName}
-                        </p>
-                        <p className="text-xs text-gray-500">{company.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <p className="text-sm text-gray-900">{company.industry}</p>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center space-x-1 text-sm text-gray-600">
-                      <MapPin size={14} />
-                      <span>{company.location}</span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center space-x-2">
-                      <Briefcase size={16} className="text-purple-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        {company.jobsPosted}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center space-x-2">
-                      <Users size={16} className="text-orange-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        {company.activeEmployees}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center space-x-2">
-                      <UserCheck size={16} className="text-teal-600" />
-                      <span className="text-sm font-semibold text-gray-900">
-                        {company.hired}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="py-4 px-6">
-                    <span
-                      className={`px-3 py-1 text-xs font-medium rounded-full ${
-                        company.status === "active"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {company.status}
-                    </span>
-                  </td>
-                  <td className="py-4 px-6">
-                    <div className="flex items-center justify-end">
-                      <button
-                        onClick={() => handleView(company)}
-                        className="flex items-center space-x-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
-                      >
-                        <Eye size={16} />
-                        <span>View</span>
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan="7" className="py-12 text-center text-gray-500">
+                    Loading...
                   </td>
                 </tr>
-              ))}
+              ) : filteredCompanies.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="py-12 text-center">
+                    <Building2
+                      size={48}
+                      className="mx-auto text-gray-400 mb-4"
+                    />
+                    <p className="text-gray-500">No companies found</p>
+                  </td>
+                </tr>
+              ) : (
+                filteredCompanies.map((company) => (
+                  <tr key={company._id} className="hover:bg-gray-50 transition">
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
+                          <span className="text-white font-bold text-lg">
+                            {company.companyName?.charAt(0)?.toUpperCase() ||
+                              "?"}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">
+                            {company.companyName}
+                          </p>
+                          <p className="text-xs text-gray-500">
+                            {company.contactEmail}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-1 text-sm text-gray-600">
+                        <UserIcon size={14} />
+                        <span>{company.contactPerson || "N/A"}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-1 text-sm text-gray-600">
+                        <Calendar size={14} />
+                        <span>{formatDate(company.createdAt)}</span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-2">
+                        <Briefcase size={16} className="text-purple-600" />
+                        <span className="text-sm font-semibold text-gray-900">
+                          {company.totalJobsPosted || 0}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center space-x-2">
+                        <UserCheck size={16} className="text-teal-600" />
+                        <span className="text-sm font-semibold text-gray-900">
+                          {company.employeesHired || 0}
+                        </span>
+                      </div>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`px-3 py-1 text-xs font-medium rounded-full ${
+                          company.verificationstatus === "approved"
+                            ? "bg-green-100 text-green-700"
+                            : company.verificationstatus === "rejected"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-orange-100 text-orange-700"
+                        }`}
+                      >
+                        {company.verificationstatus || "pending"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <div className="flex items-center justify-end">
+                        <button
+                          onClick={() => handleView(company)}
+                          className="flex items-center space-x-1 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm font-medium"
+                        >
+                          <Eye size={16} />
+                          <span>View</span>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
-
-        {filteredCompanies.length === 0 && (
-          <div className="text-center py-12">
-            <Building2 size={48} className="mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">No companies found</p>
-          </div>
-        )}
       </div>
 
       {/* View Modal */}
@@ -472,33 +379,38 @@ export default function CompaniesPage() {
               <div className="flex items-center space-x-4">
                 <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center">
                   <span className="text-white font-bold text-3xl">
-                    {selectedCompany.logo}
+                    {selectedCompany.companyName?.charAt(0)?.toUpperCase() ||
+                      "?"}
                   </span>
                 </div>
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold text-gray-900">
                     {selectedCompany.companyName}
                   </h3>
-                  <p className="text-gray-600 mt-1">
-                    {selectedCompany.industry}
+                  <p className="text-gray-600 mt-1 flex items-center space-x-2">
+                    <Mail size={14} />
+                    <span>{selectedCompany.contactEmail}</span>
                   </p>
-                  <span
-                    className={`inline-block mt-2 px-3 py-1 text-xs font-medium rounded-full ${
-                      selectedCompany.status === "active"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {selectedCompany.status}
-                  </span>
+                  <div className="flex items-center space-x-3 mt-2">
+                    <span
+                      className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
+                        selectedCompany.verificationstatus === "approved"
+                          ? "bg-green-100 text-green-700"
+                          : selectedCompany.verificationstatus === "rejected"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-orange-100 text-orange-700"
+                      }`}
+                    >
+                      {selectedCompany.verificationstatus || "pending"}
+                    </span>
+                    {selectedCompany.isVerified && (
+                      <span className="inline-block px-3 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-700 flex items-center space-x-1">
+                        <CheckCircle size={12} />
+                        <span>Verified</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
-              </div>
-
-              {/* Description */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-sm text-gray-700">
-                  {selectedCompany.description}
-                </p>
               </div>
 
               {/* Stats Grid */}
@@ -506,92 +418,93 @@ export default function CompaniesPage() {
                 <div className="bg-purple-50 rounded-lg p-4 text-center">
                   <Briefcase className="w-8 h-8 text-purple-600 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-gray-900">
-                    {selectedCompany.jobsPosted}
+                    {selectedCompany.totalJobsPosted || 0}
                   </p>
                   <p className="text-sm text-gray-600">Jobs Posted</p>
-                </div>
-                <div className="bg-orange-50 rounded-lg p-4 text-center">
-                  <Users className="w-8 h-8 text-orange-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-gray-900">
-                    {selectedCompany.activeEmployees}
-                  </p>
-                  <p className="text-sm text-gray-600">Active Employees</p>
                 </div>
                 <div className="bg-teal-50 rounded-lg p-4 text-center">
                   <UserCheck className="w-8 h-8 text-teal-600 mx-auto mb-2" />
                   <p className="text-2xl font-bold text-gray-900">
-                    {selectedCompany.hired}
+                    {selectedCompany.employeesHired || 0}
                   </p>
-                  <p className="text-sm text-gray-600">Total Hired</p>
+                  <p className="text-sm text-gray-600">Employees Hired</p>
+                </div>
+                <div className="bg-blue-50 rounded-lg p-4 text-center">
+                  <Calendar className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                  <p className="text-sm font-bold text-gray-900">
+                    {formatDate(selectedCompany.createdAt)}
+                  </p>
+                  <p className="text-sm text-gray-600">Joined Date</p>
                 </div>
               </div>
 
-              {/* Contact Information */}
+              {/* Company Information */}
               <div>
                 <h4 className="text-lg font-semibold text-gray-900 mb-4">
-                  Contact Information
+                  Company Information
                 </h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex items-start space-x-3">
-                    <Mail size={18} className="text-gray-400 mt-1" />
-                    <div>
-                      <p className="text-sm text-gray-600">Email</p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {selectedCompany.email}
-                      </p>
-                    </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Company Name</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {selectedCompany.companyName}
+                    </p>
                   </div>
-                  <div className="flex items-start space-x-3">
-                    <Phone size={18} className="text-gray-400 mt-1" />
-                    <div>
-                      <p className="text-sm text-gray-600">Phone</p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {selectedCompany.phone}
-                      </p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Contact Person</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {selectedCompany.contactPerson || "N/A"}
+                    </p>
                   </div>
-                  <div className="flex items-start space-x-3">
-                    <MapPin size={18} className="text-gray-400 mt-1" />
-                    <div>
-                      <p className="text-sm text-gray-600">Location</p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {selectedCompany.location}
-                      </p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Email</p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {selectedCompany.contactEmail}
+                    </p>
                   </div>
-                  <div className="flex items-start space-x-3">
-                    <Globe size={18} className="text-gray-400 mt-1" />
-                    <div>
-                      <p className="text-sm text-gray-600">Website</p>
-                      <a
-                        href={`https://${selectedCompany.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-blue-600 hover:text-blue-700"
-                      >
-                        {selectedCompany.website}
-                      </a>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Company ID</p>
+                    <p className="text-sm font-mono font-medium text-gray-900">
+                      {selectedCompany._id}
+                    </p>
                   </div>
-                  <div className="flex items-start space-x-3">
-                    <Calendar size={18} className="text-gray-400 mt-1" />
-                    <div>
-                      <p className="text-sm text-gray-600">Joined Date</p>
-                      <p className="text-sm font-medium text-gray-900">
-                        {selectedCompany.joinedDate}
-                      </p>
-                    </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Verification Status
+                    </p>
+                    <span
+                      className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
+                        selectedCompany.verificationstatus === "approved"
+                          ? "bg-green-100 text-green-700"
+                          : selectedCompany.verificationstatus === "rejected"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-orange-100 text-orange-700"
+                      }`}
+                    >
+                      {selectedCompany.verificationstatus || "pending"}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Account Verified
+                    </p>
+                    <p className="text-sm font-medium text-gray-900">
+                      {selectedCompany.isVerified ? "Yes" : "No"}
+                    </p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200 flex justify-end">
+            <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
               <button
                 onClick={() => setShowViewModal(false)}
                 className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
               >
                 Close
+              </button>
+              <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                View Full Details
               </button>
             </div>
           </div>
