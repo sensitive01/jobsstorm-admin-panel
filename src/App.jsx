@@ -12,6 +12,9 @@ import PreviewCandidate from "./components/candidate/PreviewCandidate";
 import CompanyJobPostedTableList from "./components/employer/CompanyJobPostedTableList";
 import ViewJobDetails from "./components/employer/ViewJobDetails";
 import EditJobData from "./components/employer/EditJobData";
+import BlogForm from "./components/blogs/BlogForm";
+import BlogDisplay from "./components/blogs/BlogDisplay";
+
 
 function App() {
   return (
@@ -39,6 +42,9 @@ function App() {
           />
           <Route path="view-job-details/:jobId" element={<ViewJobDetails />} />
           <Route path="edit-job-details/:jobId" element={<EditJobData />} />
+          <Route path="blog-form" element={<BlogForm />} />
+          <Route path="edit-blog/:blogId" element={<BlogForm />} />
+          <Route path="blog-display" element={<BlogDisplay />} />
         </Route>
       </Routes>
       <ToastContainer

@@ -108,3 +108,49 @@ export const updateJobDetails = async (jobId, updatedData) => {
     return err;
   }
 };
+
+export const addBlog = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/post-blogs`, {
+      data,
+    });
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const getAllBlogs = async () => {
+  try {
+    const response = await axiosInstance.get(`/get-all-blogs`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+export const getblogById = async (blogId) => {
+  try {
+    const response = await axiosInstance.get(`/get-blogs/${blogId}`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const updateBlog = async (blogId,data) => {
+  try {
+    const response = await axiosInstance.put(`/update-blog-data/${blogId}`,{data});
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const deleteBlog = async (blogId) => {
+  try {
+    const response = await axiosInstance.delete(`/delete-blog-data/${blogId}`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};

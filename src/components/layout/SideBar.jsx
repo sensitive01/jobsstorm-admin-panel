@@ -48,6 +48,13 @@ export default function SideBar({
       description: "Company Listings",
       path: "/admin/company-table",
     },
+    {
+      id: "blogs",
+      name: "Blogs",
+      icon: Briefcase,
+      description: "blogs",
+      path: "/admin/blog-display",
+    },
   ];
 
   // Handle menu click with navigation
