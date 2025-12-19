@@ -3,6 +3,7 @@ import {
   getAllPlans,
   updatePlan,
   deletePlan,
+  getAllCandidatePlans,
 } from "../../api/service/axiosService";
 import { Pencil, Trash2, Check, X, XCircle, Save, Loader2 } from "lucide-react";
 import { toast } from "react-toastify";
@@ -21,11 +22,13 @@ const PlanPage = () => {
   const fetchPlans = async () => {
     setLoading(true);
     try {
-      const response = await getAllPlans();
-      if (response?.data?.success) {
-        setPlans(response.data.data || []);
+      
+      const plansRes = await getAllCandidatePlans();
+      const planData = plansRes?.data?.data || plansRes?.data || [];
+      if (Array.isArray(planData)) {
+        setPlans(planData);
       } else {
-        toast.error("Failed to fetch plans");
+        console.error("Unexpected plan data structure", plansRes);
       }
     } catch (error) {
       console.error("Error fetching plans:", error);
