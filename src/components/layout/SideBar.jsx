@@ -48,6 +48,20 @@ export default function SideBar({
       description: "Company Listings",
       path: "/admin/company-table",
     },
+    // {
+    //   id: "plans",
+    //   name: "Plans",
+    //   icon: Briefcase,
+    //   description: "plans",
+    //   path: "/admin/plans-display",
+    // },
+    {
+      id: "assignpackage",
+      name: "Assign Package",
+      icon: Briefcase,
+      description: "assign package",
+      path: "/admin/assign-package-display",
+    },
     {
       id: "blogs",
       name: "Blogs",
