@@ -15,8 +15,10 @@ import EditJobData from "./components/employer/EditJobData";
 import BlogForm from "./components/blogs/BlogForm";
 import BlogDisplay from "./components/blogs/BlogDisplay";
 import PlanPage from "./components/plans/PlanPage";
+import EmployerPlanPage from "./components/plans/EmployerPlanPage";
 import AssignPackage from "./components/assignpachage/AssignPackage";
-
+import ResourceForm from "./components/resources/ResourceForm";
+import ResourceDisplay from "./components/resources/ResourceDisplay";
 
 function App() {
   return (
@@ -48,7 +50,11 @@ function App() {
           <Route path="edit-blog/:blogId" element={<BlogForm />} />
           <Route path="blog-display" element={<BlogDisplay />} />
           <Route path="plans-display" element={<PlanPage />} />
+          <Route path="employer-plans-display" element={<EmployerPlanPage />} />
           <Route path="assign-package-display" element={<AssignPackage />} />
+          <Route path="resource-form" element={<ResourceForm />} />
+          <Route path="edit-resource/:resourceId" element={<ResourceForm />} />
+          <Route path="resources" element={<ResourceDisplay />} />
         </Route>
       </Routes>
       <ToastContainer

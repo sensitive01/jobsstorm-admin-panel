@@ -50,10 +50,17 @@ export default function SideBar({
     },
     {
       id: "plans",
-      name: "Plans",
+      name: "Candidate Plans",
       icon: Briefcase,
-      description: "plans",
+      description: "candidate plans",
       path: "/admin/plans-display",
+    },
+    {
+      id: "employer_plans",
+      name: "Employer Plans",
+      icon: Briefcase,
+      description: "employer pricing",
+      path: "/admin/employer-plans-display",
     },
     {
       id: "assignpackage",
@@ -68,6 +75,13 @@ export default function SideBar({
       icon: Briefcase,
       description: "blogs",
       path: "/admin/blog-display",
+    },
+    {
+      id: "resources",
+      name: "Resources",
+      icon: Briefcase,
+      description: "Manage Resources",
+      path: "/admin/resources",
     },
   ];
 

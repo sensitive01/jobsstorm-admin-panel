@@ -12,7 +12,7 @@ export const uploadCloudinary = async (file) => {
   formData.append("folder", folderPath);
 
   const { data } = await axios.post(
-    `https://api.cloudinary.com/v1_1/${cloudName}/raw/upload`,
+    `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
     formData
   );
 

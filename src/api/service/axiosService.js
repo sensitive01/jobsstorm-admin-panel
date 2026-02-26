@@ -202,3 +202,84 @@ export const activateEmployeePlan = async (employeeId, planId) => {
     return err;
   }
 };
+
+export const getAllEmployerPlans = async () => {
+  try {
+    const response = await axiosInstance.get(`/admin/getallplans`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const updateEmployerPlan = async (planId, data) => {
+  try {
+    const response = await axiosInstance.put(`/admin/updateplan/${planId}`, data);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const deleteEmployerPlan = async (planId) => {
+  try {
+    const response = await axiosInstance.delete(`/admin/deleteplan/${planId}`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const createEmployerPlan = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/admin/createplan`, data);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const addResource = async (data) => {
+  try {
+    const response = await axiosInstance.post(`/admin/post-resources`, data);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const getAllResources = async () => {
+  try {
+    const response = await axiosInstance.get(`/admin/get-all-resources`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const getResourceById = async (resourceId) => {
+  try {
+    const response = await axiosInstance.get(`/admin/get-resources/${resourceId}`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const updateResource = async (resourceId, data) => {
+  try {
+    const response = await axiosInstance.put(`/admin/update-resource-data/${resourceId}`, data);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const deleteResource = async (resourceId) => {
+  try {
+    const response = await axiosInstance.delete(`/admin/delete-resource-data/${resourceId}`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
