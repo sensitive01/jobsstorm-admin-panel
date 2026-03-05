@@ -19,6 +19,7 @@ import EmployerPlanPage from "./components/plans/EmployerPlanPage";
 import AssignPackage from "./components/assignpachage/AssignPackage";
 import ResourceForm from "./components/resources/ResourceForm";
 import ResourceDisplay from "./components/resources/ResourceDisplay";
+import TransactionsTable from "./components/transactions/TransactionsTable";
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
           <Route path="resource-form" element={<ResourceForm />} />
           <Route path="edit-resource/:resourceId" element={<ResourceForm />} />
           <Route path="resources" element={<ResourceDisplay />} />
+          <Route path="transactions" element={<TransactionsTable />} />
         </Route>
       </Routes>
       <ToastContainer

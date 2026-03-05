@@ -63,7 +63,7 @@ const AssignPackage = () => {
   const filteredCandidates = candidates.filter(
     (candidate) =>
       candidate.userName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      candidate.userEmail?.toLowerCase().includes(searchTerm.toLowerCase())
+      candidate.userEmail?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleCandidateSelect = (candidate) => {
@@ -87,7 +87,7 @@ const AssignPackage = () => {
     try {
       const res = await activateEmployeePlan(
         selectedCandidate._id,
-        selectedPlan
+        selectedPlan,
       );
       if (res.status === 200 || res.status === 201) {
         alert("Plan assigned successfully!");
@@ -270,6 +270,18 @@ const AssignPackage = () => {
                       </div>
                       <div style={styles.candidateEmail}>
                         {candidate.userEmail}
+                        {candidate.subscriptionActive && (
+                          <span
+                            style={{
+                              marginLeft: "8px",
+                              color: "#7c3aed",
+                              fontSize: "11px",
+                              fontWeight: "bold",
+                            }}
+                          >
+                            ({candidate.subscription?.planType?.toUpperCase()})
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>

@@ -8,6 +8,7 @@ import {
   ChevronRight,
   LogOut,
   Settings,
+  CreditCard,
 } from "lucide-react";
 
 export default function SideBar({
@@ -83,6 +84,13 @@ export default function SideBar({
       description: "Manage Resources",
       path: "/admin/resources",
     },
+    {
+      id: "transactions",
+      name: "Transactions",
+      icon: CreditCard,
+      description: "Payment History",
+      path: "/admin/transactions",
+    },
   ];
 
   // Handle menu click with navigation
@@ -127,7 +135,10 @@ export default function SideBar({
       {/* Menu Section */}
       <div className="flex flex-col h-[calc(100%-4rem)]">
         {/* Menu Items */}
-        <nav className="flex-1 p-4">
+        <nav
+          className="flex-1 p-4 overflow-y-auto"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           <ul className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;

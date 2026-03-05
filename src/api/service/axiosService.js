@@ -283,3 +283,21 @@ export const deleteResource = async (resourceId) => {
     return err;
   }
 };
+
+export const getAllTransactions = async () => {
+  try {
+    const response = await axiosInstance.get(`/admin/get-all-transactions`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const deleteTransaction = async (id) => {
+  try {
+    const response = await axiosInstance.delete(`/admin/delete-transaction/${id}`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};

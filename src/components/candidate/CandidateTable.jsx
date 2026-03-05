@@ -12,10 +12,10 @@ import {
   Mail,
   User,
   Shield,
+  CreditCard,
 } from "lucide-react";
 import { getRegisterdCandidate } from "../../api/service/axiosService";
 import { useNavigate } from "react-router-dom";
-
 
 // Toast Component
 const Toast = ({ show, message, type = "success" }) => {
@@ -46,7 +46,7 @@ const Toast = ({ show, message, type = "success" }) => {
 };
 
 export default function CandidateTable() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCandidate, setSelectedCandidate] = useState(null);
@@ -63,7 +63,7 @@ export default function CandidateTable() {
     const fetchData = async () => {
       try {
         const response = await getRegisterdCandidate();
-        if (response.status===200) {
+        if (response.status === 200) {
           setCandidates(response.data.data);
         }
       } catch (error) {
@@ -95,6 +95,8 @@ export default function CandidateTable() {
       return matchesSearch && candidate.blockstatus === "block";
     if (activeTab === "pending")
       return matchesSearch && candidate.verificationstatus === "pending";
+    if (activeTab === "subscribed")
+      return matchesSearch && candidate.subscriptionActive;
 
     return matchesSearch;
   });
@@ -109,8 +111,8 @@ export default function CandidateTable() {
         candidates.map((candidate) =>
           candidate._id === id
             ? { ...candidate, blockstatus: "block" }
-            : candidate
-        )
+            : candidate,
+        ),
       );
       showToast("Candidate blocked successfully", "success");
     } catch (error) {
@@ -127,8 +129,8 @@ export default function CandidateTable() {
         candidates.map((candidate) =>
           candidate._id === id
             ? { ...candidate, blockstatus: "unblock" }
-            : candidate
-        )
+            : candidate,
+        ),
       );
       showToast("Candidate unblocked successfully", "success");
     } catch (error) {
@@ -145,8 +147,8 @@ export default function CandidateTable() {
         candidates.map((candidate) =>
           candidate._id === id
             ? { ...candidate, verificationstatus: "approved", isVerified: true }
-            : candidate
-        )
+            : candidate,
+        ),
       );
       showToast("Candidate approved successfully!", "success");
     } catch (error) {
@@ -167,8 +169,8 @@ export default function CandidateTable() {
                 verificationstatus: "rejected",
                 isVerified: false,
               }
-            : candidate
-        )
+            : candidate,
+        ),
       );
       showToast("Candidate rejected", "success");
     } catch (error) {
@@ -177,7 +179,7 @@ export default function CandidateTable() {
   };
 
   const handlePreview = (candidate) => {
-    navigate(`/admin/preview-candidate/${candidate._id}`)
+    navigate(`/admin/preview-candidate/${candidate._id}`);
   };
 
   const formatDate = (dateString) => {
@@ -195,6 +197,7 @@ export default function CandidateTable() {
     inactive: candidates.filter((c) => c.blockstatus === "block").length,
     pending: candidates.filter((c) => c.verificationstatus === "pending")
       .length,
+    subscribed: candidates.filter((c) => c.subscriptionActive).length,
   };
 
   return (
@@ -221,7 +224,7 @@ export default function CandidateTable() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -274,6 +277,19 @@ export default function CandidateTable() {
             </div>
           </div>
         </div>
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-gray-600">Subscribed</p>
+              <p className="text-2xl font-bold text-purple-600 mt-1">
+                {stats.subscribed}
+              </p>
+            </div>
+            <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+              <CreditCard size={24} className="text-purple-600" />
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Filters and Search */}
@@ -321,6 +337,16 @@ export default function CandidateTable() {
             >
               Pending ({stats.pending})
             </button>
+            <button
+              onClick={() => setActiveTab("subscribed")}
+              className={`px-4 py-2 rounded-lg font-medium transition ${
+                activeTab === "subscribed"
+                  ? "bg-purple-600 text-white"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+              }`}
+            >
+              Subscribed ({stats.subscribed})
+            </button>
           </div>
 
           {/* Search */}
@@ -357,6 +383,9 @@ export default function CandidateTable() {
                 </th>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase">
                   Verification
+                </th>
+                <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase">
+                  Plan
                 </th>
                 <th className="text-left py-4 px-6 text-xs font-semibold text-gray-600 uppercase">
                   Status
@@ -429,11 +458,25 @@ export default function CandidateTable() {
                           candidate.verificationstatus === "approved"
                             ? "bg-green-100 text-green-700"
                             : candidate.verificationstatus === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-orange-100 text-orange-700"
+                              ? "bg-red-100 text-red-700"
+                              : "bg-orange-100 text-orange-700"
                         }`}
                       >
                         {candidate.verificationstatus || "pending"}
+                      </span>
+                    </td>
+                    <td className="py-4 px-6">
+                      <span
+                        className={`px-3 py-1 text-xs font-medium rounded-full ${
+                          candidate.subscriptionActive
+                            ? "bg-purple-100 text-purple-700"
+                            : "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {candidate.subscriptionActive
+                          ? candidate.subscription?.planType?.toUpperCase() ||
+                            "ACTIVE"
+                          : "No Plan"}
                       </span>
                     </td>
                     <td className="py-4 px-6">
@@ -541,8 +584,8 @@ export default function CandidateTable() {
                         selectedCandidate.verificationstatus === "approved"
                           ? "bg-green-100 text-green-700"
                           : selectedCandidate.verificationstatus === "rejected"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-orange-100 text-orange-700"
+                            ? "bg-red-100 text-red-700"
+                            : "bg-orange-100 text-orange-700"
                       }`}
                     >
                       {selectedCandidate.verificationstatus || "pending"}

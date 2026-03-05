@@ -20,6 +20,7 @@ import {
   ArrowLeft,
   MapPin,
   Code,
+  CreditCard,
 } from "lucide-react";
 import { useParams } from "react-router-dom";
 import { getIndividualCandidateDetails } from "../../api/service/axiosService";
@@ -34,7 +35,7 @@ const PreviewCandidate = () => {
       try {
         // Simulating API call with demo data
         const response = await getIndividualCandidateDetails(candidateId);
-        if (response.status===200) {
+        if (response.status === 200) {
           setCandidate(response.data.data);
         }
       } catch (error) {
@@ -132,15 +133,15 @@ const PreviewCandidate = () => {
                       candidate.verificationstatus === "approved"
                         ? "bg-green-100 text-green-700"
                         : candidate.verificationstatus === "rejected"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-orange-100 text-orange-700"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-orange-100 text-orange-700"
                     }`}
                   >
                     {candidate.verificationstatus === "approved"
                       ? "Approved"
                       : candidate.verificationstatus === "rejected"
-                      ? "Rejected"
-                      : "Pending"}
+                        ? "Rejected"
+                        : "Pending"}
                   </span>
                   <span
                     className={`px-3 py-1 text-xs font-semibold rounded-full ${
@@ -294,8 +295,8 @@ const PreviewCandidate = () => {
                     candidate.verificationstatus === "approved"
                       ? "bg-green-100 text-green-700"
                       : candidate.verificationstatus === "rejected"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-orange-100 text-orange-700"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-orange-100 text-orange-700"
                   }`}
                 >
                   {candidate.verificationstatus}
@@ -337,6 +338,88 @@ const PreviewCandidate = () => {
                   {formatDate(candidate.updatedAt)}
                 </span>
               </div>
+            </div>
+          </div>
+
+          {/* Subscription Information */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center space-x-2">
+              <CreditCard size={24} className="text-purple-600" />
+              <span>Subscription Information</span>
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                <div className="flex items-center space-x-3">
+                  <Shield size={18} className="text-gray-400" />
+                  <span className="text-sm text-gray-600">Plan Status</span>
+                </div>
+                <span
+                  className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                    candidate.subscriptionActive
+                      ? "bg-green-100 text-green-700"
+                      : "bg-red-100 text-red-700"
+                  }`}
+                >
+                  {candidate.subscriptionActive
+                    ? "Active"
+                    : "Inactive / Expired"}
+                </span>
+              </div>
+
+              {candidate.subscription && (
+                <>
+                  <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                    <div className="flex items-center space-x-3">
+                      <TrendingUp size={18} className="text-gray-400" />
+                      <span className="text-sm text-gray-600">Plan Type</span>
+                    </div>
+                    <span className="text-sm font-semibold text-gray-900 uppercase">
+                      {candidate.subscription?.planType || "N/A"}
+                    </span>
+                  </div>
+                  {candidate.subscriptionActive && (
+                    <>
+                      <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div className="flex items-center space-x-3">
+                          <Calendar size={18} className="text-gray-400" />
+                          <span className="text-sm text-gray-600">
+                            Start Date
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">
+                          {candidate.subscription?.startDate
+                            ? formatDate(candidate.subscription.startDate)
+                            : "N/A"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div className="flex items-center space-x-3">
+                          <Calendar size={18} className="text-gray-400" />
+                          <span className="text-sm text-gray-600">
+                            End Date
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">
+                          {candidate.subscription?.endDate
+                            ? formatDate(candidate.subscription.endDate)
+                            : "N/A"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div className="flex items-center space-x-3">
+                          <CreditCard size={18} className="text-gray-400" />
+                          <span className="text-sm text-gray-600">
+                            Amount Paid
+                          </span>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">
+                          ₹{candidate.subscription?.amount || 0}
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
             </div>
           </div>
 
