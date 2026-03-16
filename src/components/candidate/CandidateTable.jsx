@@ -14,8 +14,9 @@ import {
   Shield,
   CreditCard,
 } from "lucide-react";
-import { getRegisterdCandidate } from "../../api/service/axiosService";
+import { getRegisterdCandidate, getAllJobsList, applyCandidateToJob } from "../../api/service/axiosService";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
 
 // Toast Component
 const Toast = ({ show, message, type = "success" }) => {
@@ -49,8 +50,6 @@ export default function CandidateTable() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCandidate, setSelectedCandidate] = useState(null);
-  const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState({
@@ -58,6 +57,24 @@ export default function CandidateTable() {
     message: "",
     type: "success",
   });
+  const [jobs, setJobs] = useState([]);
+  const [selectedJob, setSelectedJob] = useState("");
+  const [isApplying, setIsApplying] = useState(false);
+
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  const fetchJobs = async () => {
+    try {
+      const response = await getAllJobsList();
+      if (response.status === 200) {
+        setJobs(response.data.data);
+      }
+    } catch (error) {
+      console.error("Error fetching jobs:", error);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -115,7 +132,7 @@ export default function CandidateTable() {
         ),
       );
       showToast("Candidate blocked successfully", "success");
-    } catch (error) {
+    } catch {
       showToast("Failed to block candidate", "error");
     }
   };
@@ -133,53 +150,50 @@ export default function CandidateTable() {
         ),
       );
       showToast("Candidate unblocked successfully", "success");
-    } catch (error) {
+    } catch {
       showToast("Failed to unblock candidate", "error");
-    }
-  };
-
-  const handleApprove = async (id) => {
-    try {
-      // API call to approve candidate
-      // await approveCandidate(id);
-
-      setCandidates(
-        candidates.map((candidate) =>
-          candidate._id === id
-            ? { ...candidate, verificationstatus: "approved", isVerified: true }
-            : candidate,
-        ),
-      );
-      showToast("Candidate approved successfully!", "success");
-    } catch (error) {
-      showToast("Failed to approve candidate", "error");
-    }
-  };
-
-  const handleReject = async (id) => {
-    try {
-      // API call to reject candidate
-      // await rejectCandidate(id);
-
-      setCandidates(
-        candidates.map((candidate) =>
-          candidate._id === id
-            ? {
-                ...candidate,
-                verificationstatus: "rejected",
-                isVerified: false,
-              }
-            : candidate,
-        ),
-      );
-      showToast("Candidate rejected", "success");
-    } catch (error) {
-      showToast("Failed to reject candidate", "error");
     }
   };
 
   const handlePreview = (candidate) => {
     navigate(`/admin/preview-candidate/${candidate._id}`);
+  };
+
+  const handleApplyToJob = async (candidate) => {
+    if (!selectedJob) {
+      showToast("Please select a job first from the list at the top.", "error");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    const jobName = jobs.find(j => j._id === selectedJob)?.jobTitle;
+
+    const confirm = await Swal.fire({
+      title: "Confirm Application",
+      text: `Are you sure you want to apply ${candidate.userName} to the job "${jobName}"?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#2563eb",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, apply candidate",
+    });
+
+    if (confirm.isConfirmed) {
+      try {
+        setIsApplying(true);
+        const response = await applyCandidateToJob(selectedJob, candidate._id);
+        if (response.data && response.data.success) {
+          showToast(response.data.message || "Application submitted!", "success");
+        } else {
+          showToast(response.data?.message || "Failed to apply candidate.", "error");
+        }
+      } catch (error) {
+        console.error("Error applying candidate:", error);
+        showToast("An error occurred during application.", "error");
+      } finally {
+        setIsApplying(false);
+      }
+    }
   };
 
   const formatDate = (dateString) => {
@@ -349,19 +363,36 @@ export default function CandidateTable() {
             </button>
           </div>
 
-          {/* Search */}
-          <div className="relative w-full md:w-64">
-            <Search
-              size={18}
-              className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-            />
-            <input
-              type="text"
-              placeholder="Search candidates..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          {/* Search & Apply For Job */}
+          <div className="flex flex-col md:flex-row items-center gap-4 w-full md:w-auto">
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">Apply Candidate To:</span>
+              <select
+                value={selectedJob}
+                onChange={(e) => setSelectedJob(e.target.value)}
+                className="w-full md:w-64 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm font-medium"
+              >
+                <option value="">Select a Job</option>
+                {jobs.map((job) => (
+                  <option key={job._id} value={job._id}>
+                    {job.jobTitle} ({job.companyName})
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="relative w-full md:w-64">
+              <Search
+                size={18}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              />
+              <input
+                type="text"
+                placeholder="Search candidates..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -495,33 +526,24 @@ export default function CandidateTable() {
                     <td className="py-4 px-6">
                       <div className="flex items-center justify-end space-x-2">
                         <button
+                          onClick={() => handleApplyToJob(candidate)}
+                          disabled={isApplying}
+                          className={`p-2 rounded-lg transition ${selectedJob ? 'hover:bg-green-50 text-green-600' : 'text-gray-300 cursor-not-allowed'}`}
+                          title="Apply to Job"
+                        >
+                          {isApplying ? (
+                            <div className="w-18 h-18 border-2 border-green-500 border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <CheckCircle size={18} />
+                          )}
+                        </button>
+                        <button
                           onClick={() => handlePreview(candidate)}
                           className="p-2 hover:bg-blue-50 rounded-lg transition"
                           title="View Details"
                         >
                           <Eye size={18} className="text-blue-600" />
                         </button>
-                        {candidate.verificationstatus === "pending" && (
-                          <>
-                            {/* <button
-                              onClick={() => handleApprove(candidate._id)}
-                              className="p-2 hover:bg-green-50 rounded-lg transition"
-                              title="Approve"
-                            >
-                              <CheckCircle
-                                size={18}
-                                className="text-green-600"
-                              />
-                            </button> */}
-                            {/* <button
-                              onClick={() => handleReject(candidate._id)}
-                              className="p-2 hover:bg-red-50 rounded-lg transition"
-                              title="Reject"
-                            >
-                              <XCircle size={18} className="text-red-600" />
-                            </button> */}
-                          </>
-                        )}
                         {candidate.blockstatus === "unblock" ? (
                           <button
                             onClick={() => handleBlock(candidate._id)}
@@ -548,174 +570,6 @@ export default function CandidateTable() {
           </table>
         </div>
       </div>
-
-      {/* Preview Modal */}
-      {showPreviewModal && selectedCandidate && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  Candidate Details
-                </h2>
-                <button
-                  onClick={() => setShowPreviewModal(false)}
-                  className="text-gray-500 hover:text-gray-700"
-                >
-                  <XCircle size={24} />
-                </button>
-              </div>
-            </div>
-            <div className="p-6 space-y-6">
-              <div className="flex items-center space-x-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-2xl">
-                    {selectedCandidate.userName?.charAt(0)?.toUpperCase() ||
-                      "?"}
-                  </span>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">
-                    {selectedCandidate.userName}
-                  </h3>
-                  <div className="flex items-center space-x-3 mt-2">
-                    <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                        selectedCandidate.verificationstatus === "approved"
-                          ? "bg-green-100 text-green-700"
-                          : selectedCandidate.verificationstatus === "rejected"
-                            ? "bg-red-100 text-red-700"
-                            : "bg-orange-100 text-orange-700"
-                      }`}
-                    >
-                      {selectedCandidate.verificationstatus || "pending"}
-                    </span>
-                    <span
-                      className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                        selectedCandidate.blockstatus === "unblock"
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {selectedCandidate.blockstatus === "unblock"
-                        ? "Active"
-                        : "Blocked"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1 flex items-center space-x-1">
-                    <Mail size={14} />
-                    <span>Email</span>
-                  </p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {selectedCandidate.userEmail}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1 flex items-center space-x-1">
-                    <CheckCircle size={14} />
-                    <span>Email Verified</span>
-                  </p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {selectedCandidate.emailverifedstatus ? "Yes" : "No"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1 flex items-center space-x-1">
-                    <Calendar size={14} />
-                    <span>Registration Date</span>
-                  </p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {formatDate(selectedCandidate.createdAt)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1 flex items-center space-x-1">
-                    <Shield size={14} />
-                    <span>Account Verified</span>
-                  </p>
-                  <p className="text-sm font-medium text-gray-900">
-                    {selectedCandidate.isVerified ? "Yes" : "No"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">User ID</p>
-                  <p className="text-sm font-mono font-medium text-gray-900">
-                    {selectedCandidate._id}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Block Status</p>
-                  <span
-                    className={`px-3 py-1 text-xs font-medium rounded-full ${
-                      selectedCandidate.blockstatus === "unblock"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-red-100 text-red-700"
-                    }`}
-                  >
-                    {selectedCandidate.blockstatus}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <div className="p-6 border-t border-gray-200 flex justify-end space-x-3">
-              {selectedCandidate.verificationstatus === "pending" && (
-                <>
-                  {/* <button
-                    onClick={() => {
-                      handleReject(selectedCandidate._id);
-                      setShowPreviewModal(false);
-                    }}
-                    className="px-4 py-2 border border-red-300 text-red-700 rounded-lg hover:bg-red-50"
-                  >
-                    Reject
-                  </button> */}
-                  {/* <button
-                    onClick={() => {
-                      handleApprove(selectedCandidate._id);
-                      setShowPreviewModal(false);
-                    }}
-                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                  >
-                    Approve
-                  </button> */}
-                </>
-              )}
-              {selectedCandidate.blockstatus === "unblock" ? (
-                <button
-                  onClick={() => {
-                    handleBlock(selectedCandidate._id);
-                    setShowPreviewModal(false);
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                >
-                  Block Candidate
-                </button>
-              ) : (
-                <button
-                  onClick={() => {
-                    handleUnblock(selectedCandidate._id);
-                    setShowPreviewModal(false);
-                  }}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
-                >
-                  Unblock Candidate
-                </button>
-              )}
-              <button
-                onClick={() => setShowPreviewModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

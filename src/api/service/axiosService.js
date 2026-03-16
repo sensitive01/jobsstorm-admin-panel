@@ -301,3 +301,21 @@ export const deleteTransaction = async (id) => {
     return err;
   }
 };
+
+export const getAllJobsList = async () => {
+  try {
+    const response = await axiosInstance.get(`/admin/get-all-jobs-list`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const applyCandidateToJob = async (jobId, candidateId) => {
+  try {
+    const response = await axiosInstance.post(`/admin/apply-job/${jobId}/${candidateId}`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
