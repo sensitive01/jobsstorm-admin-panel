@@ -17,15 +17,310 @@ import {
   Clock,
   ArrowLeft,
   Crown,
+  User,
+  RefreshCcw,
+  X,
 } from "lucide-react";
-import { getEmployerDetails } from "../../api/service/axiosService";
+import {
+  getEmployerDetails,
+  toggleBlockEmployer,
+  updateEmployerDetails,
+} from "../../api/service/axiosService";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+
+const EditEmployerModal = ({ isOpen, onClose, employer, onUpdate }) => {
+  const [formData, setFormData] = useState({
+    companyName: "",
+    contactPerson: "",
+    contactEmail: "",
+    contactPhone: "",
+    companyAddress: "",
+    companyWebsite: "",
+    totaljobpostinglimit: 0,
+    totalprofileviews: 0,
+    totaldownloadresume: 0,
+    subscriptionleft: 0,
+  });
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    if (employer) {
+      setFormData({
+        companyName: employer.companyName || "",
+        contactPerson: employer.contactPerson || "",
+        contactEmail: employer.contactEmail || "",
+        contactPhone: employer.contactPhone || "",
+        companyAddress: employer.companyAddress || "",
+        companyWebsite: employer.companyWebsite || "",
+        totaljobpostinglimit: employer.totaljobpostinglimit || 0,
+        totalprofileviews: employer.totalprofileviews || 0,
+        totaldownloadresume: employer.totaldownloadresume || 0,
+        subscriptionleft: employer.subscriptionleft || 0,
+      });
+    }
+  }, [employer, isOpen]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]:
+        name.includes("limit") ||
+        name.includes("views") ||
+        name.includes("download") ||
+        name.includes("left")
+          ? parseInt(value) || 0
+          : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setSaving(true);
+      const response = await updateEmployerDetails(employer._id, {
+        updatedData: formData,
+      });
+      if (response.status === 200) {
+        toast.success("Employer details updated successfully!");
+        onUpdate(response.data.data);
+        onClose();
+      } else {
+        toast.error("Failed to update employer details");
+      }
+    } catch (error) {
+      console.error("Error updating employer:", error);
+      toast.error("An error occurred while saving");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6 md:p-8">
+      {/* Backdrop with blur */}
+      <div 
+        className="absolute inset-0 bg-gray-900/60 backdrop-blur-md transition-opacity duration-300"
+        onClick={onClose}
+      />
+      
+      {/* Modal Content */}
+      <div className="relative bg-white w-full max-w-3xl rounded-3xl shadow-2xl border border-gray-100 overflow-hidden transform transition-all duration-300 scale-100 max-h-[90vh] flex flex-col">
+        {/* Header */}
+        <div className="px-8 py-6 bg-gradient-to-r from-blue-600 to-indigo-700 flex justify-between items-center shrink-0">
+          <div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">
+              Update Employer Profile
+            </h2>
+            <p className="text-blue-100 text-sm mt-1 opacity-90">
+              Refine the company and operational settings
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-2xl transition-all border border-white/10 group"
+          >
+            <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
+          </button>
+        </div>
+
+        {/* Scrollable Body */}
+        <div className="p-8 overflow-y-auto custom-scrollbar bg-gray-50/50">
+          <form onSubmit={handleSubmit} id="edit-employer-form" className="space-y-8">
+            {/* Section: Basic Information */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+              <div className="flex items-center space-x-3 pb-2 border-b border-gray-100">
+                <div className="w-8 h-8 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
+                  <Building2 size={18} />
+                </div>
+                <h3 className="font-bold text-gray-900 uppercase tracking-wider text-xs">
+                  Company Identity
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1.5 font-semibold text-gray-700 text-sm">
+                  <label>Company Name</label>
+                  <input
+                    type="text"
+                    name="companyName"
+                    value={formData.companyName}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all placeholder:text-gray-400"
+                    placeholder="Enter official company name"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5 font-semibold text-gray-700 text-sm">
+                  <label>Company Website</label>
+                  <input
+                    type="url"
+                    name="companyWebsite"
+                    value={formData.companyWebsite}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all"
+                    placeholder="https://company.xyz"
+                  />
+                </div>
+                <div className="space-y-1.5 font-semibold text-gray-700 text-sm md:col-span-2">
+                  <label>Company Address</label>
+                  <textarea
+                    name="companyAddress"
+                    value={formData.companyAddress}
+                    onChange={handleChange}
+                    rows="2"
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all resize-none"
+                    placeholder="Full headquarters address..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section: Contact Details */}
+            <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm space-y-6">
+              <div className="flex items-center space-x-3 pb-2 border-b border-gray-100">
+                <div className="w-8 h-8 bg-purple-100 text-purple-600 rounded-lg flex items-center justify-center">
+                  <User size={18} />
+                </div>
+                <h3 className="font-bold text-gray-900 uppercase tracking-wider text-xs">
+                  Primary Contact
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-1.5 font-semibold text-gray-700 text-sm">
+                  <label>Contact Person</label>
+                  <input
+                    type="text"
+                    name="contactPerson"
+                    value={formData.contactPerson}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5 font-semibold text-gray-700 text-sm">
+                  <label>Contact Phone</label>
+                  <input
+                    type="text"
+                    name="contactPhone"
+                    value={formData.contactPhone}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5 font-semibold text-gray-700 text-sm md:col-span-2">
+                  <label>Contact Email</label>
+                  <input
+                    type="email"
+                    name="contactEmail"
+                    value={formData.contactEmail}
+                    onChange={handleChange}
+                    className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl focus:ring-4 focus:ring-purple-500/10 focus:border-purple-500 outline-none transition-all"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Section: Quotas & Limits */}
+            <div className="bg-white p-6 rounded-2xl border border-yellow-200 bg-yellow-50/10 shadow-sm space-y-6">
+              <div className="flex items-center space-x-3 pb-2 border-b border-yellow-100">
+                <div className="w-8 h-8 bg-yellow-100 text-yellow-700 rounded-lg flex items-center justify-center">
+                  <Briefcase size={18} />
+                </div>
+                <h3 className="font-bold text-gray-900 uppercase tracking-wider text-xs">
+                  Usage Limits & Entitlements
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 bg-white border border-gray-100 rounded-xl space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase block">Job Limit</label>
+                  <input
+                    type="number"
+                    name="totaljobpostinglimit"
+                    value={formData.totaljobpostinglimit}
+                    onChange={handleChange}
+                    className="w-full bg-transparent text-xl font-black text-gray-900 outline-none focus:text-blue-600"
+                  />
+                </div>
+                <div className="p-4 bg-white border border-gray-100 rounded-xl space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase block">Sub Days</label>
+                  <input
+                    type="number"
+                    name="subscriptionleft"
+                    value={formData.subscriptionleft}
+                    onChange={handleChange}
+                    className="w-full bg-transparent text-xl font-black text-gray-900 outline-none focus:text-blue-600"
+                  />
+                </div>
+                <div className="p-4 bg-white border border-gray-100 rounded-xl space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase block">Profile Views</label>
+                  <input
+                    type="number"
+                    name="totalprofileviews"
+                    value={formData.totalprofileviews}
+                    onChange={handleChange}
+                    className="w-full bg-transparent text-xl font-black text-gray-900 outline-none focus:text-blue-600"
+                  />
+                </div>
+                <div className="p-4 bg-white border border-gray-100 rounded-xl space-y-2">
+                  <label className="text-xs font-bold text-gray-500 uppercase block">Resumes</label>
+                  <input
+                    type="number"
+                    name="totaldownloadresume"
+                    value={formData.totaldownloadresume}
+                    onChange={handleChange}
+                    className="w-full bg-transparent text-xl font-black text-gray-900 outline-none focus:text-blue-600"
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        {/* Footer */}
+        <div className="px-8 py-6 bg-white border-t border-gray-100 flex justify-end space-x-4 shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-8 py-3 bg-gray-100 text-gray-700 font-bold rounded-2xl hover:bg-gray-200 transition-colors shadow-sm"
+            disabled={saving}
+          >
+            Discard
+          </button>
+          <button
+            type="submit"
+            form="edit-employer-form"
+            className="px-10 py-3 bg-blue-600 text-white font-bold rounded-2xl hover:bg-blue-700 transition-all shadow-lg shadow-blue-200 flex items-center space-x-2"
+            disabled={saving}
+          >
+            {saving ? (
+              <>
+                <RefreshCcw size={18} className="animate-spin" />
+                <span>Updating...</span>
+              </>
+            ) : (
+              <span>Update Employer</span>
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PreviewEmployer = () => {
   const { empId } = useParams();
   const navigate = useNavigate();
   const [employer, setEmployer] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [blocking, setBlocking] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -42,6 +337,45 @@ const PreviewEmployer = () => {
     };
     fetchData();
   }, [empId]);
+
+  const handleBlockToggle = async () => {
+    try {
+      setBlocking(true);
+      const response = await toggleBlockEmployer(empId);
+      if (response.status === 200) {
+        const updatedEmployer = response.data.employer;
+        setEmployer(updatedEmployer);
+        toast.success(
+          `Employer ${
+            updatedEmployer.blockstatus === "block" ? "blocked" : "unblocked"
+          } successfully!`
+        );
+      } else {
+        toast.error("Failed to update block status");
+      }
+    } catch (error) {
+      console.error("Error toggling block status:", error);
+      toast.error("An error occurred");
+    } finally {
+      setBlocking(false);
+    }
+  };
+
+  const handleEditDetails = () => {
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdateSuccess = (updatedEmployer) => {
+    setEmployer(updatedEmployer);
+  };
+
+  const handleViewJobs = () => {
+    navigate(`/admin/company-job-posted-list/${empId}`);
+  };
+
+  const handleViewSubscriptions = () => {
+    navigate(`/admin/employer-subscription-history/${empId}`);
+  };
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -431,30 +765,53 @@ const PreviewEmployer = () => {
               Quick Actions
             </h2>
             <div className="space-y-3">
-              <button className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium">
+              <button
+                onClick={handleEditDetails}
+                className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition font-medium"
+              >
                 Edit Employer Details
               </button>
               {employer.blockstatus === "unblock" ? (
-                <button className="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium flex items-center justify-center space-x-2">
+                <button
+                  onClick={handleBlockToggle}
+                  disabled={blocking}
+                  className="w-full px-4 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition font-medium flex items-center justify-center space-x-2 disabled:opacity-50"
+                >
                   <Lock size={18} />
-                  <span>Block Employer</span>
+                  <span>{blocking ? "Processing..." : "Block Employer"}</span>
                 </button>
               ) : (
-                <button className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium flex items-center justify-center space-x-2">
+                <button
+                  onClick={handleBlockToggle}
+                  disabled={blocking}
+                  className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium flex items-center justify-center space-x-2 disabled:opacity-50"
+                >
                   <Unlock size={18} />
-                  <span>Unblock Employer</span>
+                  <span>{blocking ? "Processing..." : "Unblock Employer"}</span>
                 </button>
               )}
-              <button className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+              <button
+                onClick={handleViewJobs}
+                className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+              >
                 View Job Postings
               </button>
-              <button className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium">
+              <button
+                onClick={handleViewSubscriptions}
+                className="w-full px-4 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition font-medium"
+              >
                 View Subscription History
               </button>
             </div>
           </div>
         </div>
       </div>
+      <EditEmployerModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        employer={employer}
+        onUpdate={handleUpdateSuccess}
+      />
     </div>
   );
 };

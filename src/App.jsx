@@ -20,6 +20,7 @@ import AssignPackage from "./components/assignpachage/AssignPackage";
 import ResourceForm from "./components/resources/ResourceForm";
 import ResourceDisplay from "./components/resources/ResourceDisplay";
 import TransactionsTable from "./components/transactions/TransactionsTable";
+import SubscriptionHistory from "./components/employer/SubscriptionHistory";
 
 function App() {
   return (
@@ -57,6 +58,10 @@ function App() {
           <Route path="edit-resource/:resourceId" element={<ResourceForm />} />
           <Route path="resources" element={<ResourceDisplay />} />
           <Route path="transactions" element={<TransactionsTable />} />
+          <Route
+            path="employer-subscription-history/:empId"
+            element={<SubscriptionHistory />}
+          />
         </Route>
       </Routes>
       <ToastContainer

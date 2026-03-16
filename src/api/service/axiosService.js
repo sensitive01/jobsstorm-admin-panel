@@ -49,6 +49,29 @@ export const getEmployerDetails = async (employerId) => {
   }
 };
 
+export const toggleBlockEmployer = async (employerId) => {
+  try {
+    const response = await axiosInstance.put(
+      `/admin/updateblockstatus/${employerId}`
+    );
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const updateEmployerDetails = async (employerId, data) => {
+  try {
+    const response = await axiosInstance.put(
+      `/admin/update-employer-details/${employerId}`,
+      data
+    );
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
 export const getRegisterdCandidate = async () => {
   try {
     const response = await axiosInstance.get(`/admin/get-registerd-candidate`);
@@ -296,6 +319,17 @@ export const getAllTransactions = async () => {
 export const deleteTransaction = async (id) => {
   try {
     const response = await axiosInstance.delete(`/admin/delete-transaction/${id}`);
+    return response;
+  } catch (err) {
+    return err;
+  }
+};
+
+export const getEmployerTransactions = async (employerId) => {
+  try {
+    const response = await axiosInstance.get(
+      `/admin/get-employer-transactions/${employerId}`
+    );
     return response;
   } catch (err) {
     return err;
